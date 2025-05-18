@@ -6,3 +6,7 @@ export { default as Bookmark } from './pages/Bookmark'
 export { default as Movies } from './pages/Movies'
 export { default as MovieDetails } from './pages/MovieDetails'
 export { default as MovieReview } from './components/MovieReview'
+export { default as Watchlist } from './pages/Watchlist'
+export { default as GenreFilter } from './components/GenreFilter'
+
+

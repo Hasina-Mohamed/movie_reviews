@@ -5,4 +5,30 @@
 body {
   background-color: #10141F;
   color: white;
+  font-family: 'Inter', sans-serif;
 }
+
+@layer components {
+  .btn-primary {
+    @apply bg-[#FC4747] text-white px-6 py-2 rounded-lg hover:bg-opacity-80 transition-colors duration-300;
+  }
+  
+  .btn-secondary {
+    @apply bg-transparent border border-white text-white px-6 py-2 rounded-lg hover:bg-white hover:text-[#10141F] transition-colors duration-300;
+  }
+  
+  .input-field {
+    @apply bg-[#10141F] border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#FC4747];
+  }
+  
+  .card {
+    @apply bg-[#161D2F] rounded-lg overflow-hidden transition-transform duration-300 hover:scale-105;
+  }
+  
+  .nav-link {
+    @apply font-medium transition-colors duration-300;
+  }
+}
+
+
+

@@ -7,6 +7,10 @@ import { CiEdit } from "react-icons/ci";
 import { AiTwotoneDelete } from "react-icons/ai";
 import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
+import { useDispatch, useSelector } from 'react-redux';
+import { addToWatchlist, removeFromWatchlist } from '../redux/slices/watchlistSlice';
+import { FaBookmark, FaRegBookmark, FaListUl, FaRegListAlt } from "react-icons/fa";
+
 const MovieDetails = () => {
     const [deleteReview] = useDeleteReviewMutation()
     const { data: MovieReviews = [] } = useGetReviewsQuery();
@@ -48,6 +52,19 @@ const MovieDetails = () => {
                 })
         }
     }
+
+    const dispatch = useDispatch();
+    const { watchlistMovies } = useSelector((state) => state.watchlist);
+    const isInWatchlist = watchlistMovies.some((m) => m.id === movie?.id);
+
+    const handleWatchlist = () => {
+        if (isInWatchlist) {
+            dispatch(removeFromWatchlist(movie));
+        } else {
+            dispatch(addToWatchlist(movie));
+        }
+    };
+
     return (
         <div className="w-full p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 justify-between items-start gap-5 p-3">
@@ -108,6 +125,24 @@ const MovieDetails = () => {
                     })
                 }
             </div>
+            {auth && (
+                <button 
+                    onClick={handleWatchlist}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary rounded-lg hover:bg-opacity-80 transition-all"
+                >
+                    {isInWatchlist ? (
+                        <>
+                            <FaListUl className="text-accent" />
+                            <span>Remove from Watchlist</span>
+                        </>
+                    ) : (
+                        <>
+                            <FaRegListAlt />
+                            <span>Add to Watchlist</span>
+                        </>
+                    )}
+                </button>
+            )}
         </div>
     )
 }
