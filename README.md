@@ -35,10 +35,14 @@ movie_reviews/
 
 git clone https://github.com/Hasina-Mohamed/movie_reviews.git
 cd movie_reviews
+
+# In backend directory
 cd backend
 npm install
-# Add your environment variables in a .env file (e.g. Mongo URI, API keys)
+Add your environment variables in a .env file (e.g. Mongo URI, API keys)
 npm run dev
+
+# In frontend directory
 cd ../frontend
 npm install
 npm run dev
