@@ -1,31 +1,42 @@
 import React, { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { MovieReview } from '../ExportFiles';
-import { useDeleteReviewMutation, useGetReviewsQuery } from '../redux/slices/reviewSlices';
+import { useGetReviewsQuery } from '../redux/slices/reviewSlices';
 import { useGetCurrentUserQuery } from '../redux/slices/userSlices';
-import { CiEdit } from "react-icons/ci";
-import { AiTwotoneDelete } from "react-icons/ai";
+import EnhancedReview from '../components/EnhancedReview';
 import Cookies from 'js-cookie';
-import toast from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToWatchlist, removeFromWatchlist } from '../redux/slices/watchlistSlice';
-import { FaBookmark, FaRegBookmark, FaListUl, FaRegListAlt } from "react-icons/fa";
+import { FaBookmark, FaRegBookmark, FaListUl, FaRegListAlt, FaPlus, FaStar } from "react-icons/fa";
 
 const MovieDetails = () => {
-    const [deleteReview] = useDeleteReviewMutation()
     const { data: MovieReviews = [] } = useGetReviewsQuery();
     const { data: user = [] } = useGetCurrentUserQuery()
     const currentUser = user?.user || {};
     const currentReview = MovieReviews?.reviews || [];
     const [showReview, setShowReview] = useState(false);
     const movie = useLocation().state;
-    const getReviewOfMovieDetail = currentReview?.filter(res => {
+    
+    const movieReviews = currentReview?.filter(res => {
         return res?.MovieId == movie?.id
-    })
+    });
 
-    const formatDate = (date) => {
-        return new Date(date).toLocaleString();
-    }
+    // Sort reviews by helpfulness and date
+    const sortedReviews = [...movieReviews].sort((a, b) => {
+        const helpfulnessA = (a.helpfulVotes || 0) - (a.notHelpfulVotes || 0);
+        const helpfulnessB = (b.helpfulVotes || 0) - (b.notHelpfulVotes || 0);
+        
+        if (helpfulnessB !== helpfulnessA) {
+            return helpfulnessB - helpfulnessA; // Sort by helpfulness first
+        }
+        
+        return new Date(b.createdAt) - new Date(a.createdAt); // Then by date
+    });
+
+    // Calculate average rating
+    const averageRating = movieReviews.length > 0 
+        ? movieReviews.reduce((sum, review) => sum + review.MovieRate, 0) / movieReviews.length 
+        : 0;
 
     const [auth, setAuth] = useState(false);
     const userToken = Cookies.get('userToken');
@@ -37,20 +48,9 @@ const MovieDetails = () => {
         }
     }, [])
 
-    const handleDelete = (id) => {
-        if (confirm('are you sure to delete this one')) {
-            deleteReview(id)
-                .then((res) => {
-                    const status = res?.data?.status;
-                    if (status) {
-                        toast.success(res?.data?.message);
-                    } else {
-                        toast.error(res?.data?.message);
-                    }
-                }).catch((err) => {
-                    console.log(err);
-                })
-        }
+    const handleReviewDelete = (reviewId) => {
+        // This will trigger a refetch through RTK Query
+        console.log('Review deleted:', reviewId);
     }
 
     const dispatch = useDispatch();
@@ -66,83 +66,185 @@ const MovieDetails = () => {
     };
 
     return (
-        <div className="w-full p-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 justify-between items-start gap-5 p-3">
-                <img className="w-full rounded-md object-cover" src={`${'https://image.tmdb.org/t/p/w500' + movie?.backdrop_path || 'https://image.tmdb.org/t/p/w500' + movie?.poster_path}`} alt="" />
-                <div className="flex flex-col justify-start item-start gap-2 space-y-2">
-                    <div className="flex flex-row justify-between md:justify-start items-center gap-5 ">
-                        <span className=" text-center bg-green-500 p-1 rounded md:font-bold text-white text-lg">
-                            {movie?.vote_average * 10} % matches{" "}
-                        </span>
-                        <span className=" font-thin text-lg">
-                            {movie?.release_date || movie?.first_air_date}
-                        </span>
-                        <span className="flex h-4 items-center justify-center rounded  border border-white/40 px-1.5 text-xs">
-                            HD
-                        </span>
-                    </div>
-                    <span className=" text-lg text-gray-400 capitalize space-x-1">title :<small className="text-white ml-2">{movie?.title}</small></span>
-                    <span className=" text-lg text-gray-400 capitalize space-x-1">original_language :<small className="text-white ml-2">{movie?.original_language}</small></span>
-                    <span className=" text-lg text-gray-400 capitalize space-x-1">overview : <small className="text-white ml-2">{movie?.overview}</small></span>
-                    <span className=" text-lg text-gray-400 capitalize space-x-1">vote_average :<small className="text-white ml-2">{movie?.vote_average}</small></span>
-                    <span className=" text-lg text-gray-400 capitalize space-x-1">vote_count :<small className="text-white ml-2">{movie?.vote_count}</small></span>
-                    {/* <BsFillPlusCircleFill size={25} className="mt-2 cursor-pointer text-white" onClick={() => handleMovies()} /> */}
+        <div className="w-full">
+            {/* Hero Section with Backdrop */}
+            <div className="relative">
+                {/* Backdrop Image */}
+                <div className="absolute inset-0 w-full h-96 md:h-[500px] overflow-hidden">
+                    <img
+                        className="w-full h-full object-cover"
+                        src={`https://image.tmdb.org/t/p/original${movie?.backdrop_path || movie?.poster_path}`}
+                        alt={movie?.title}
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = 'https://via.placeholder.com/1920x1080?text=No+Image';
+                        }}
+                    />
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0E1628] via-[#0E1628]/80 to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#0E1628]/90 via-transparent to-[#0E1628]/60"></div>
                 </div>
 
-            </div>
-            <div className='w-full'>
-                {
-                    auth && <button className="px-4 py-2  shadow text-[#FF6F61] text-lg bg-white"
-                        onClick={() => setShowReview(!showReview)}> Create Review</button>
-                }
-            </div>
-            {
-                showReview && <MovieReview showReview={showReview} setShowReview={setShowReview} movieId={movie?.id} />
-            }
+                {/* Content Container */}
+                <div className="relative z-10 px-4 pt-20 pb-8">
+                    <div className="flex flex-col lg:flex-row items-start gap-8 mt-32 md:mt-40">
+                        {/* Movie Poster */}
+                        <div className="flex-shrink-0">
+                            <div className="relative group">
+                                <img
+                                    className="w-64 md:w-80 h-96 md:h-[480px] object-cover rounded-2xl shadow-2xl border border-gray-700/50"
+                                    src={`https://image.tmdb.org/t/p/w500${movie?.poster_path || movie?.backdrop_path}`}
+                                    alt={movie?.title}
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = 'https://via.placeholder.com/500x750?text=No+Poster';
+                                    }}
+                                />
+                                {/* Hover Effect */}
+                                <div className="absolute inset-0 bg-black/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            </div>
+                        </div>
 
-            <div className='w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-10'>
-                {
-                    getReviewOfMovieDetail?.map(review => {
-                        return <div key={review?._id} className='w-full p-3 bg-[#161D2F] text-white space-y-3 mt-10'>
-                            <div className='w-full flex flex-row justify-start items-center gap-3'>
-                                <img src="/public/images/avatarProfile.png" className='w-10 h-10 rounded-full shadow' alt="" />
-                                <div className='w-fit space-y-1'>
-                                    <h1>{review?.user_id?.username}</h1>
-                                    <p>{formatDate(review?.createdAt)}</p>
+                        {/* Movie Info */}
+                        <div className="flex-1 space-y-6">
+                            {/* Title and Year */}
+                            <div className="space-y-2">
+                                <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight">
+                                    {movie?.title}
+                                </h1>
+                                <p className="text-xl text-gray-300">
+                                    {new Date(movie?.release_date).getFullYear()} • {movie?.original_language?.toUpperCase()}
+                                </p>
+                            </div>
+
+                            {/* Rating and Stats */}
+                            <div className="flex flex-wrap items-center gap-4">
+                                <div className="flex items-center gap-2 bg-yellow-500/20 backdrop-blur-sm px-4 py-2 rounded-full border border-yellow-500/30">
+                                    <FaStar className="text-yellow-400" />
+                                    <span className="text-xl font-semibold text-white">{movie?.vote_average?.toFixed(1)}</span>
+                                    <span className="text-gray-300">/ 10</span>
+                                </div>
+                                
+                                <div className="flex items-center gap-2 bg-blue-500/20 backdrop-blur-sm px-4 py-2 rounded-full border border-blue-500/30">
+                                    <span className="text-blue-400 font-medium">{movie?.vote_count?.toLocaleString()}</span>
+                                    <span className="text-gray-300">votes</span>
+                                </div>
+
+                                {movieReviews.length > 0 && (
+                                    <div className="flex items-center gap-2 bg-green-500/20 backdrop-blur-sm px-4 py-2 rounded-full border border-green-500/30">
+                                        <FaStar className="text-green-400" />
+                                        <span className="text-xl font-semibold text-white">{averageRating.toFixed(1)}</span>
+                                        <span className="text-gray-300">user rating</span>
+                                    </div>
+                                )}
+
+                                <div className="bg-gray-700/50 backdrop-blur-sm px-3 py-1 rounded-full border border-gray-600/50">
+                                    <span className="text-gray-300 text-sm font-medium">HD</span>
                                 </div>
                             </div>
-                            <p className='text-base font-light'>{review?.MovieReview}</p>
 
-                            {
-                                review?.user_id?._id == currentUser?._id && (
-                                    <div className='mt-10 w-full flex flex-row justify-end items-center gap-3'>
-                                        <CiEdit size={20} />
-                                        <AiTwotoneDelete size={20} onClick={() => handleDelete(review?._id)} />
-                                    </div>
-                                )
-                            }
+                            {/* Overview */}
+                            <div className="space-y-3 max-w-3xl">
+                                <h2 className="text-2xl font-semibold text-white">Overview</h2>
+                                <p className="text-lg text-gray-300 leading-relaxed">
+                                    {movie?.overview}
+                                </p>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex flex-wrap items-center gap-4 pt-4">
+                                {auth && (
+                                    <>
+                                        <button 
+                                            className="flex items-center gap-3 px-6 py-3 bg-[#FC4747] text-white font-semibold rounded-xl hover:bg-[#FC4747]/80 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                                            onClick={() => setShowReview(!showReview)}
+                                        >
+                                            <FaPlus />
+                                            {movieReviews.some(r => r.user_id._id === currentUser._id) ? 'Update Review' : 'Write Review'}
+                                        </button>
+
+                                        <button 
+                                            onClick={handleWatchlist}
+                                            className="flex items-center gap-3 px-6 py-3 bg-gray-700/50 backdrop-blur-sm text-white font-medium rounded-xl hover:bg-gray-600/50 transition-all duration-300 border border-gray-600/50"
+                                        >
+                                            {isInWatchlist ? (
+                                                <>
+                                                    <FaListUl className="text-[#FC4747]" />
+                                                    Remove from Watchlist
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <FaRegListAlt />
+                                                    Add to Watchlist
+                                                </>
+                                            )}
+                                        </button>
+
+                                        <button 
+                                            className="flex items-center gap-3 px-6 py-3 bg-gray-700/50 backdrop-blur-sm text-white font-medium rounded-xl hover:bg-gray-600/50 transition-all duration-300 border border-gray-600/50"
+                                        >
+                                            <FaBookmark />
+                                            Bookmark
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         </div>
-                    })
-                }
+                    </div>
+                </div>
             </div>
-            {auth && (
-                <button 
-                    onClick={handleWatchlist}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary rounded-lg hover:bg-opacity-80 transition-all"
-                >
-                    {isInWatchlist ? (
-                        <>
-                            <FaListUl className="text-accent" />
-                            <span>Remove from Watchlist</span>
-                        </>
-                    ) : (
-                        <>
-                            <FaRegListAlt />
-                            <span>Add to Watchlist</span>
-                        </>
+
+            {/* Main Content */}
+            <div className="px-4 pb-12">
+                {/* Reviews Section */}
+                <div className="bg-[#161D2F]/50 backdrop-blur-sm rounded-3xl p-8 border border-gray-700/50 shadow-2xl">
+                    <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center gap-4">
+                            <h2 className="text-3xl font-bold text-white">Community Reviews</h2>
+                            <div className="bg-gray-700/50 px-4 py-2 rounded-full">
+                                <span className="text-gray-300 font-medium">{movieReviews.length} reviews</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {showReview && (
+                        <div className="mb-8 bg-[#0E1628]/50 rounded-2xl p-6 border border-gray-600/30">
+                            <MovieReview showReview={showReview} setShowReview={setShowReview} movieId={movie?.id} />
+                        </div>
                     )}
-                </button>
-            )}
+
+                    {/* Reviews List */}
+                    <div className="space-y-6">
+                        {sortedReviews.length > 0 ? (
+                            sortedReviews.map(review => (
+                                <EnhancedReview 
+                                    key={review._id} 
+                                    review={review} 
+                                    onDelete={handleReviewDelete}
+                                />
+                            ))
+                        ) : (
+                            <div className="text-center py-16 bg-[#0E1628]/30 rounded-2xl border border-gray-700/30">
+                                <div className="max-w-md mx-auto">
+                                    <div className="w-16 h-16 bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <FaStar className="text-2xl text-gray-400" />
+                                    </div>
+                                    <h3 className="text-2xl font-semibold text-white mb-2">No reviews yet</h3>
+                                    <p className="text-gray-400 mb-6">Be the first to share your thoughts about this movie!</p>
+                                    {auth && (
+                                        <button 
+                                            className="px-8 py-3 bg-[#FC4747] text-white font-semibold rounded-xl hover:bg-[#FC4747]/80 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                                            onClick={() => setShowReview(true)}
+                                        >
+                                            Write First Review
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
         </div>
     )
 }

@@ -55,6 +55,15 @@ export const reviewSlices = createApi({
             },
             providesTags: ['review']
         }),
+
+        voteReviewHelpfulness: builder.mutation({
+            query: ({ reviewId, voteType }) => ({
+                url: `review/${reviewId}/vote`,
+                method: 'POST',
+                body: { voteType }
+            }),
+            invalidatesTags: ['review']
+        }),
     })
 })
 
@@ -63,5 +72,6 @@ export const {
     useCreateReviewMutation,
     useDeleteReviewMutation,
     useGetReviewsQuery,
-    useUpdateReviewMutation
+    useUpdateReviewMutation,
+    useVoteReviewHelpfulnessMutation
 } = reviewSlices;

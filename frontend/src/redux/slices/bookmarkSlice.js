@@ -2,33 +2,52 @@
 import { createSlice } from '@reduxjs/toolkit';
 import toast from 'react-hot-toast';
 
-const bookmarkSlice = createSlice({
-  name: 'bookmark',
+const favoritesSlice = createSlice({
+  name: 'favorites',
   initialState: {
-    bookmarkedMovies:  localStorage.getItem('bookmarkedMovies')
-    ? JSON.parse(localStorage.getItem('bookmarkedMovies'))
-    : [],
+    favoriteMovies: localStorage.getItem('favoriteMovies')
+      ? JSON.parse(localStorage.getItem('favoriteMovies'))
+      : [],
   },
   reducers: {
-    bookmarkMovie: (state, action) => {
-      if (!state.bookmarkedMovies.some((movie) => movie.id === action.payload.id)) {
-        state.bookmarkedMovies.push(action.payload);
-        localStorage.setItem('bookmarkedMovies', JSON.stringify(state.bookmarkedMovies));
-        toast.success('successfully Added bookmark')
+    addToFavorites: (state, action) => {
+      if (!state.favoriteMovies.some((movie) => movie.id === action.payload.id)) {
+        state.favoriteMovies.push(action.payload);
+        localStorage.setItem('favoriteMovies', JSON.stringify(state.favoriteMovies));
+        toast.success('Added to favorites ❤️');
+      } else {
+        toast.error('Already in your favorites');
       }
     },
-    removeBookmark: (state, action) => {
+    removeFromFavorites: (state, action) => {
       const movieIdToRemove = action.payload;
       
-      console.log('movieIdToRemove', movieIdToRemove);
-      state.bookmarkedMovies = state.bookmarkedMovies.filter(
+      state.favoriteMovies = state.favoriteMovies.filter(
         (movie) => movie.id !== movieIdToRemove.id
       );
-      localStorage.setItem('bookmarkedMovies', JSON.stringify(state.bookmarkedMovies));
-      toast.success('successfully removed bookmark')
+      localStorage.setItem('favoriteMovies', JSON.stringify(state.favoriteMovies));
+      toast.success('Removed from favorites');
+    },
+    toggleFavorite: (state, action) => {
+      const movie = action.payload;
+      const existingIndex = state.favoriteMovies.findIndex(
+        (favMovie) => favMovie.id === movie.id
+      );
+      
+      if (existingIndex !== -1) {
+        // Remove from favorites
+        state.favoriteMovies.splice(existingIndex, 1);
+        localStorage.setItem('favoriteMovies', JSON.stringify(state.favoriteMovies));
+        toast.success('Removed from favorites');
+      } else {
+        // Add to favorites
+        state.favoriteMovies.push(movie);
+        localStorage.setItem('favoriteMovies', JSON.stringify(state.favoriteMovies));
+        toast.success('Added to favorites ❤️');
+      }
     },
   },
 });
 
-export const { bookmarkMovie, removeBookmark } = bookmarkSlice.actions;
-export default bookmarkSlice.reducer;
+export const { addToFavorites, removeFromFavorites, toggleFavorite } = favoritesSlice.actions;
+export default favoritesSlice.reducer;

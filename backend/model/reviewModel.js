@@ -17,6 +17,33 @@ const reviewSchema = mongoose.Schema({
     MovieRate: {
         type: Number,
         required: [true, "Please add the rate of the Movie"],
+        min: 1,
+        max: 5
+    },
+    helpfulVotes: {
+        type: Number,
+        default: 0
+    },
+    notHelpfulVotes: {
+        type: Number,
+        default: 0
+    },
+    votedUsers: [{
+        user_id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        },
+        voteType: {
+            type: String,
+            enum: ['helpful', 'not_helpful']
+        }
+    }],
+    isEdited: {
+        type: Boolean,
+        default: false
+    },
+    editedAt: {
+        type: Date
     }
 },
     {

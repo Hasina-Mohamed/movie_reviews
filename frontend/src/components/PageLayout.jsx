@@ -1,15 +1,18 @@
 import React from 'react'
 import { Outlet } from 'react-router-dom'
 import { Sidebar } from '../ExportFiles'
+import MobileNav from './MobileNav'
+
 const PageLayout = () => {
     return (
-        <div className='w-full'>
+        <div className='min-h-screen bg-gradient-to-br from-[#0E1628] via-[#161D2F] to-[#0E1628]'>
             <Sidebar />
-            <div className='w-full relative'>
-                <div className='absolute w-[75%] md:w-[65%] lg:w-[80%] top-16 right-3'>
+            <MobileNav />
+            <main className='lg:ml-[240px] min-h-screen pb-20 lg:pb-0'>
+                <div className='p-4 lg:p-6 pt-6 lg:pt-6'>
                     <Outlet />
                 </div>
-            </div>
+            </main>
         </div>
     )
 }

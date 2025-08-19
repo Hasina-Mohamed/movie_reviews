@@ -1,6 +1,6 @@
-# 🎬 Movie Reviews
+# 🎬 MovieMates
 
-**Movie Reviews** is a full-stack web application that allows users to search for movies, save their favorites, and leave reviews using a star rating system and comments.
+**MovieMates** is a full-stack web application that allows users to search for movies, save their favorites, and leave reviews using a star rating system and comments.
 
 ## 🔧 Tech Stack
 

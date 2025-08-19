@@ -8,5 +8,8 @@ export { default as MovieDetails } from './pages/MovieDetails'
 export { default as MovieReview } from './components/MovieReview'
 export { default as Watchlist } from './pages/Watchlist'
 export { default as GenreFilter } from './components/GenreFilter'
+export { default as AdvancedSearch } from './components/AdvancedSearch'
+export { default as EnhancedReview } from './components/EnhancedReview'
+export { default as MobileNav } from './components/MobileNav'
 
 
