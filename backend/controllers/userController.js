@@ -117,7 +117,7 @@ const fetchUsers = async (req, res) => {
 // fetch user api endpoint
 const fetchUser = async (req, res) => {
     try {
-        const user = await userModel.findById({ _id: req.userId });
+        const user = await userModel.findById({ _id: req.user.id });
         if (!user) {
             return res.json({
                 status: false,

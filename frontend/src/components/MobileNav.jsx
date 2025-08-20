@@ -1,31 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
-import { FaFilm, FaHeart, FaClock, FaUser } from 'react-icons/fa';
+import { FaFilm, FaHeart, FaClock } from 'react-icons/fa';
 import { MdSpaceDashboard } from 'react-icons/md';
-import { useEffect, useState } from 'react';
-import Cookies from 'js-cookie';
-import { useGetCurrentUserQuery } from '../redux/slices/userSlices';
-import { useDispatch } from 'react-redux';
-import { syncFavoritesWithAuth } from '../redux/slices/bookmarkSlice';
-import { syncWatchlistWithAuth } from '../redux/slices/watchlistSlice';
 
 const MobileNav = () => {
     const location = useLocation();
-    const [auth, setAuth] = useState(false);
-    const userToken = Cookies.get('userToken');
-    const { data: user = {} } = useGetCurrentUserQuery();
-    const currentUser = user?.user || {};
-    const dispatch = useDispatch();
-
-    useEffect(() => {
-        if (userToken) {
-            setAuth(true);
-        } else {
-            setAuth(false);
-        }
-        // Sync favorites and watchlist with authentication state
-        dispatch(syncFavoritesWithAuth());
-        dispatch(syncWatchlistWithAuth());
-    }, [userToken, dispatch]);
 
     return (
         <div className='lg:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-t from-[#0E1628] to-[#161D2F] border-t border-gray-700/30 backdrop-blur-xl z-50'>
@@ -95,18 +73,7 @@ const MobileNav = () => {
                     <span className='text-xs font-medium'>Watchlist</span>
                 </Link>
 
-                {/* Profile/Login */}
-                <Link 
-                    to={auth ? '/profile' : '/user-login'}
-                    className='flex flex-col items-center py-2 px-4 text-gray-400'
-                >
-                    <div className='p-2 rounded-xl mb-1'>
-                        <FaUser size={18} />
-                    </div>
-                    <span className='text-xs font-medium'>
-                        {auth ? currentUser?.username?.substring(0, 8) || 'Profile' : 'Login'}
-                    </span>
-                </Link>
+
             </div>
         </div>
     );

@@ -1,6 +1,6 @@
 
 import { createSlice } from '@reduxjs/toolkit';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import Cookies from 'js-cookie';
 
 const getAuthStatus = () => {
@@ -10,9 +10,14 @@ const getAuthStatus = () => {
 const favoritesSlice = createSlice({
   name: 'favorites',
   initialState: {
-    favoriteMovies: getAuthStatus() && localStorage.getItem('favoriteMovies')
-      ? JSON.parse(localStorage.getItem('favoriteMovies'))
-      : [],
+    favoriteMovies: (() => {
+      const stored = localStorage.getItem('favoriteMovies');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed;
+      }
+      return [];
+    })(),
   },
   reducers: {
     addToFavorites: (state, action) => {
@@ -71,21 +76,32 @@ const favoritesSlice = createSlice({
       localStorage.removeItem('favoriteMovies');
     },
     syncFavoritesWithAuth: (state) => {
-      const isAuthenticated = getAuthStatus();
-      if (!isAuthenticated) {
-        // Clear favorites when not authenticated
-        state.favoriteMovies = [];
-        localStorage.removeItem('favoriteMovies');
+      const storedFavorites = localStorage.getItem('favoriteMovies');
+      
+      if (storedFavorites) {
+        state.favoriteMovies = JSON.parse(storedFavorites);
       } else {
-        // Load favorites from localStorage when authenticated
-        const storedFavorites = localStorage.getItem('favoriteMovies');
-        if (storedFavorites) {
-          state.favoriteMovies = JSON.parse(storedFavorites);
-        }
+        state.favoriteMovies = [];
+      }
+    },
+    // New action to sync with database data
+    syncFavoritesFromDatabase: (state, action) => {
+      if (action.payload && Array.isArray(action.payload)) {
+        state.favoriteMovies = action.payload;
+        // Also update localStorage for consistency
+        localStorage.setItem('favoriteMovies', JSON.stringify(action.payload));
       }
     },
   },
 });
 
-export const { addToFavorites, removeFromFavorites, toggleFavorite, clearFavorites, syncFavoritesWithAuth } = favoritesSlice.actions;
+export const { 
+  addToFavorites, 
+  removeFromFavorites, 
+  toggleFavorite, 
+  clearFavorites, 
+  syncFavoritesWithAuth,
+  syncFavoritesFromDatabase 
+} = favoritesSlice.actions;
 export default favoritesSlice.reducer;
+

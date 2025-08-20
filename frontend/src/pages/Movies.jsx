@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { FaHeart, FaRegHeart, FaStar, FaFire, FaTrophy, FaClock, FaRocket } from 'react-icons/fa';
+import { FaHeart, FaRegHeart, FaStar, FaFire, FaTrophy, FaRocket } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { toggleFavorite, syncFavoritesWithAuth } from '../redux/slices/bookmarkSlice';
-import { syncWatchlistWithAuth } from '../redux/slices/watchlistSlice';
+import { useAddToFavoritesMutation } from '../redux/slices/favoriteApiSlice';
 import Cookies from 'js-cookie';
 import AdvancedSearch from '../components/AdvancedSearch';
 
@@ -20,6 +20,14 @@ const Movies = () => {
   const [upcomingMovies, setUpcomingMovies] = useState([]);
   const [currentFilters, setCurrentFilters] = useState({});
   const [showSearchResults, setShowSearchResults] = useState(false);
+
+  // Database API mutations
+  const [addToFavoritesDb] = useAddToFavoritesMutation();
+
+  useEffect(() => {
+    // Load all movie categories on component mount
+    loadAllMovieCategories();
+  }, []);
   
   useEffect(() => {
     if (userToken) {
@@ -27,15 +35,7 @@ const Movies = () => {
     } else {
       setAuth(false);
     }
-    // Sync favorites and watchlist with authentication state
-    dispatch(syncFavoritesWithAuth());
-    dispatch(syncWatchlistWithAuth());
-  }, [userToken, dispatch]);
-
-  useEffect(() => {
-    // Load all movie categories on component mount
-    loadAllMovieCategories();
-  }, []);
+  }, [userToken]);
   
   const loadAllMovieCategories = async () => {
     setLoading(true);
@@ -73,6 +73,20 @@ const Movies = () => {
     }
   };
 
+  const handleToggleFavorite = async (movie) => {
+    try {
+      if (userToken) {
+        // Use database API
+        await addToFavoritesDb(movie).unwrap();
+      } else {
+        // Use localStorage
+        dispatch(toggleFavorite(movie));
+      }
+    } catch (error) {
+      console.error('Error adding to favorites:', error);
+    }
+  };
+
   const MovieSection = ({ title, movies, icon }) => (
     <div className="mb-12">
       <div className="flex items-center gap-3 mb-6">
@@ -87,8 +101,12 @@ const Movies = () => {
             className="bg-[#161D2F] rounded-lg overflow-hidden group relative hover:scale-105 transition-all duration-300"
           >
             <button 
-              onClick={() => dispatch(toggleFavorite(movie))}
-              className="absolute top-2 right-2 z-10 bg-black/50 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleToggleFavorite(movie);
+              }}
+              className="absolute top-2 right-2 z-10 bg-black/70 p-2 rounded-full hover:bg-red-500 transition-all duration-300 hover:scale-110"
             >
               {favoriteMovies.some(fav => fav.id === movie.id) ? (
                 <FaHeart className="text-red-500" />
@@ -115,7 +133,7 @@ const Movies = () => {
               </div>
               
               <div className="p-4">
-                <h3 className="font-medium text-lg truncate">{movie.title}</h3>
+                <h3 className="font-medium text-lg truncate text-white">{movie.title}</h3>
                 <div className="flex justify-between items-center mt-2 text-sm text-gray-400">
                   <span>Lang: {movie.original_language.toUpperCase()}</span>
                   <span>{new Date(movie.release_date).getFullYear()}</span>
@@ -139,7 +157,6 @@ const Movies = () => {
         onSearchResults={handleSearchResults} 
         onFiltersChange={handleFiltersChange}
       />
-
 
       
       {loading ? (
@@ -173,8 +190,12 @@ const Movies = () => {
                 className="bg-[#161D2F] rounded-lg overflow-hidden group relative hover:scale-105 transition-all duration-300"
               >
                 <button 
-                  onClick={() => dispatch(toggleFavorite(movie))}
-                  className="absolute top-2 right-2 z-10 bg-black/50 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleToggleFavorite(movie);
+                  }}
+                  className="absolute top-2 right-2 z-10 bg-black/70 p-2 rounded-full hover:bg-red-500 transition-all duration-300 hover:scale-110"
                 >
                   {favoriteMovies.some(fav => fav.id === movie.id) ? (
                     <FaHeart className="text-red-500" />
@@ -201,7 +222,7 @@ const Movies = () => {
                   </div>
                   
                   <div className="p-4">
-                    <h3 className="font-medium text-lg truncate">{movie.title}</h3>
+                    <h3 className="font-medium text-lg truncate text-white">{movie.title}</h3>
                     <div className="flex justify-between items-center mt-2 text-sm text-[#8E95A9]">
                       <span>Lang: {movie.original_language.toUpperCase()}</span>
                       <span>{new Date(movie.release_date).getFullYear()}</span>
@@ -249,7 +270,7 @@ const Movies = () => {
       )}
     </div>
   );
-}
+};
 
-export default Movies
+export default Movies;
 

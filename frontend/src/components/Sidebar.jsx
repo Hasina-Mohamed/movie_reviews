@@ -11,7 +11,11 @@ import toast from 'react-hot-toast';
 
 const Sidebar = () => {
     const dispatch = useDispatch();
-    const { data: user = {} } = useGetCurrentUserQuery()
+    const { data: user = {}, isLoading, error } = useGetCurrentUserQuery(undefined, {
+        skip: !Cookies.get('userToken'), // Skip query if no token
+        refetchOnMountOrArgChange: true, // Refetch when component mounts
+        refetchOnFocus: true // Refetch when window regains focus
+    });
     const currentUser = user?.user || {};
     const [auth, setAuth] = useState(false);
     const userToken = Cookies.get('userToken');
@@ -23,14 +27,13 @@ const Sidebar = () => {
         } else {
             setAuth(false);
         }
-        // Sync favorites and watchlist with authentication state
-        dispatch(syncFavoritesWithAuth());
-        dispatch(syncWatchlistWithAuth());
-    }, [userToken, dispatch])
+    }, [userToken])
     
     const handleLogout = () => {
         Cookies.remove('userToken');
-        // Clear favorites and watchlist on logout
+        // Clear favorites and watchlist from localStorage on logout
+        localStorage.removeItem('favoriteMovies');
+        localStorage.removeItem('watchlistMovies');
         dispatch(syncFavoritesWithAuth());
         dispatch(syncWatchlistWithAuth());
         window.location.replace('/');
@@ -136,7 +139,9 @@ const Sidebar = () => {
                                     <div className='absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0E1628]'></div>
                                 </div>
                                 <div className='hidden md:block flex-1'>
-                                    <p className='font-bold text-white text-xs'>{currentUser?.username || 'User'}</p>
+                                    <p className='font-bold text-white text-xs'>
+                                        {isLoading ? 'Loading...' : (currentUser?.username || 'User')}
+                                    </p>
                                 </div>
                             </div>
 

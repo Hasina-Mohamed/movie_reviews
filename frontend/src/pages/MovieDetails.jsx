@@ -7,11 +7,16 @@ import EnhancedReview from '../components/EnhancedReview';
 import Cookies from 'js-cookie';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToWatchlist, removeFromWatchlist } from '../redux/slices/watchlistSlice';
+import { useAddToWatchlistMutation, useRemoveFromWatchlistMutation } from '../redux/slices/watchlistApiSlice';
 import { FaBookmark, FaRegBookmark, FaListUl, FaRegListAlt, FaPlus, FaStar } from "react-icons/fa";
 
 const MovieDetails = () => {
     const { data: MovieReviews = [] } = useGetReviewsQuery();
-    const { data: user = [] } = useGetCurrentUserQuery()
+    const { data: user = [], isLoading } = useGetCurrentUserQuery(undefined, {
+        skip: !Cookies.get('userToken'), // Skip query if no token
+        refetchOnMountOrArgChange: true, // Refetch when component mounts
+        refetchOnFocus: true // Refetch when window regains focus
+    });
     const currentUser = user?.user || {};
     const currentReview = MovieReviews?.reviews || [];
     const [showReview, setShowReview] = useState(false);
@@ -56,12 +61,30 @@ const MovieDetails = () => {
     const dispatch = useDispatch();
     const { watchlistMovies } = useSelector((state) => state.watchlist);
     const isInWatchlist = watchlistMovies.some((m) => m.id === movie?.id);
+    
+    // Database API mutations
+    const [addToWatchlistDb] = useAddToWatchlistMutation();
+    const [removeFromWatchlistDb] = useRemoveFromWatchlistMutation();
 
-    const handleWatchlist = () => {
-        if (isInWatchlist) {
-            dispatch(removeFromWatchlist(movie));
-        } else {
-            dispatch(addToWatchlist(movie));
+    const handleWatchlist = async () => {
+        try {
+            if (userToken) {
+                // Use database API when logged in
+                if (isInWatchlist) {
+                    await removeFromWatchlistDb(movie.id).unwrap();
+                } else {
+                    await addToWatchlistDb(movie).unwrap();
+                }
+            } else {
+                // Use localStorage when not logged in
+                if (isInWatchlist) {
+                    dispatch(removeFromWatchlist(movie));
+                } else {
+                    dispatch(addToWatchlist(movie));
+                }
+            }
+        } catch (error) {
+            console.error('Error toggling watchlist:', error);
         }
     };
 
@@ -178,13 +201,6 @@ const MovieDetails = () => {
                                                     Add to Watchlist
                                                 </>
                                             )}
-                                        </button>
-
-                                        <button 
-                                            className="flex items-center gap-3 px-6 py-3 bg-gray-700/50 backdrop-blur-sm text-white font-medium rounded-xl hover:bg-gray-600/50 transition-all duration-300 border border-gray-600/50"
-                                        >
-                                            <FaBookmark />
-                                            Bookmark
                                         </button>
                                     </>
                                 )}

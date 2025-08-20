@@ -30,9 +30,6 @@ const userLogin = () => {
         const status = res?.data?.status;
         if (status) {
           toast.success(res?.data?.message);
-          // Sync favorites and watchlist after successful login
-          dispatch(syncFavoritesWithAuth());
-          dispatch(syncWatchlistWithAuth());
           navigate('/');
         } else {
           toast.error(res?.data?.message);
