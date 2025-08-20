@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { FaStar, FaPlay } from 'react-icons/fa';
+import { FaStar, FaPlay, FaHeart, FaRegHeart } from 'react-icons/fa';
+import { useDispatch, useSelector } from 'react-redux';
+import { toggleFavorite } from '../redux/slices/bookmarkSlice';
 
 const HomePage = () => {
   const [trendingMovies, setTrendingMovies] = useState([]);
   const [featuredMovie, setFeaturedMovie] = useState(null);
   const [topRatedMovies, setTopRatedMovies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { favoriteMovies } = useSelector((state) => state.favorites);
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -30,7 +34,7 @@ const HomePage = () => {
         
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching movies:', error);
+        // Error fetching movies
         setLoading(false);
       }
     };
@@ -101,30 +105,42 @@ const HomePage = () => {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
           {trendingMovies.map(movie => (
-            <Link 
-              key={movie.id} 
-              to={`/movie-detail/${movie.id}`}
-              state={movie}
-              className="card group p-0 overflow-hidden"
-            >
-              <div className="relative overflow-hidden">
-                <img 
-                  src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} 
-                  alt={movie.title}
-                  className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
-                />
-                <div className="absolute bottom-2 right-2 bg-primary bg-opacity-80 p-1 rounded-md flex items-center">
-                  <FaStar className="text-yellow-400 mr-1" size={12} />
-                  <span className="text-sm">{movie.vote_average.toFixed(1)}</span>
+            <div key={movie.id} className="card group p-0 overflow-hidden relative">
+              <button 
+                onClick={() => dispatch(toggleFavorite(movie))}
+                className="absolute top-2 right-2 z-10 bg-black/50 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+              >
+                {favoriteMovies.some(fav => fav.id === movie.id) ? (
+                  <FaHeart className="text-red-500" />
+                ) : (
+                  <FaRegHeart className="text-white" />
+                )}
+              </button>
+              
+              <Link 
+                to={`/movie-detail/${movie.id}`}
+                state={movie}
+                className="block"
+              >
+                <div className="relative overflow-hidden">
+                  <img 
+                    src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} 
+                    alt={movie.title}
+                    className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                  <div className="absolute bottom-2 right-2 bg-primary bg-opacity-80 p-1 rounded-md flex items-center">
+                    <FaStar className="text-yellow-400 mr-1" size={12} />
+                    <span className="text-sm">{movie.vote_average.toFixed(1)}</span>
+                  </div>
                 </div>
-              </div>
-              <div className="p-3">
-                <h3 className="font-medium truncate">{movie.title}</h3>
-                <p className="text-textSecondary text-sm">
-                  {new Date(movie.release_date).getFullYear()}
-                </p>
-              </div>
-            </Link>
+                <div className="p-3">
+                  <h3 className="font-medium truncate">{movie.title}</h3>
+                  <p className="text-textSecondary text-sm">
+                    {new Date(movie.release_date).getFullYear()}
+                  </p>
+                </div>
+              </Link>
+            </div>
           ))}
         </div>
       </section>
@@ -138,30 +154,42 @@ const HomePage = () => {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
           {topRatedMovies.map(movie => (
-            <Link 
-              key={movie.id} 
-              to={`/movie-detail/${movie.id}`}
-              state={movie}
-              className="bg-secondary rounded-lg overflow-hidden group"
-            >
-              <div className="relative overflow-hidden">
-                <img 
-                  src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} 
-                  alt={movie.title}
-                  className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
-                />
-                <div className="absolute bottom-2 right-2 bg-primary bg-opacity-80 p-1 rounded-md flex items-center">
-                  <FaStar className="text-yellow-400 mr-1" size={12} />
-                  <span className="text-sm">{movie.vote_average.toFixed(1)}</span>
+            <div key={movie.id} className="bg-secondary rounded-lg overflow-hidden group relative">
+              <button 
+                onClick={() => dispatch(toggleFavorite(movie))}
+                className="absolute top-2 right-2 z-10 bg-black/50 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+              >
+                {favoriteMovies.some(fav => fav.id === movie.id) ? (
+                  <FaHeart className="text-red-500" />
+                ) : (
+                  <FaRegHeart className="text-white" />
+                )}
+              </button>
+              
+              <Link 
+                to={`/movie-detail/${movie.id}`}
+                state={movie}
+                className="block"
+              >
+                <div className="relative overflow-hidden">
+                  <img 
+                    src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} 
+                    alt={movie.title}
+                    className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                  <div className="absolute bottom-2 right-2 bg-primary bg-opacity-80 p-1 rounded-md flex items-center">
+                    <FaStar className="text-yellow-400 mr-1" size={12} />
+                    <span className="text-sm">{movie.vote_average.toFixed(1)}</span>
+                  </div>
                 </div>
-              </div>
-              <div className="p-3">
-                <h3 className="font-medium truncate">{movie.title}</h3>
-                <p className="text-textSecondary text-sm">
-                  {new Date(movie.release_date).getFullYear()}
-                </p>
-              </div>
-            </Link>
+                <div className="p-3">
+                  <h3 className="font-medium truncate">{movie.title}</h3>
+                  <p className="text-textSecondary text-sm">
+                    {new Date(movie.release_date).getFullYear()}
+                  </p>
+                </div>
+              </Link>
+            </div>
           ))}
         </div>
       </section>

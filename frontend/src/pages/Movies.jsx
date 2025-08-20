@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import { FaHeart, FaRegHeart, FaStar, FaFire, FaTrophy, FaClock, FaRocket } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { toggleFavorite } from '../redux/slices/bookmarkSlice';
+import { toggleFavorite, syncFavoritesWithAuth } from '../redux/slices/bookmarkSlice';
+import { syncWatchlistWithAuth } from '../redux/slices/watchlistSlice';
 import Cookies from 'js-cookie';
 import AdvancedSearch from '../components/AdvancedSearch';
 
@@ -26,7 +27,10 @@ const Movies = () => {
     } else {
       setAuth(false);
     }
-  }, [userToken]);
+    // Sync favorites and watchlist with authentication state
+    dispatch(syncFavoritesWithAuth());
+    dispatch(syncWatchlistWithAuth());
+  }, [userToken, dispatch]);
 
   useEffect(() => {
     // Load all movie categories on component mount
@@ -48,7 +52,7 @@ const Movies = () => {
       setTopRatedMovies(topRatedRes.data);
       setUpcomingMovies(upcomingRes.data);
     } catch (error) {
-      console.error('Error fetching movies:', error);
+      // Error fetching movies
     } finally {
       setLoading(false);
     }
@@ -82,18 +86,16 @@ const Movies = () => {
             key={movie.id} 
             className="bg-[#161D2F] rounded-lg overflow-hidden group relative hover:scale-105 transition-all duration-300"
           >
-            {auth && (
-              <button 
-                onClick={() => dispatch(toggleFavorite(movie))}
-                className="absolute top-2 right-2 z-10 bg-black/50 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
-              >
-                {favoriteMovies.some(fav => fav.id === movie.id) ? (
-                  <FaHeart className="text-red-500" />
-                ) : (
-                  <FaRegHeart className="text-white" />
-                )}
-              </button>
-            )}
+            <button 
+              onClick={() => dispatch(toggleFavorite(movie))}
+              className="absolute top-2 right-2 z-10 bg-black/50 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+            >
+              {favoriteMovies.some(fav => fav.id === movie.id) ? (
+                <FaHeart className="text-red-500" />
+              ) : (
+                <FaRegHeart className="text-white" />
+              )}
+            </button>
             
             <Link to={`/movie-detail/${movie.id}`} state={movie} className="block">
               <div className="relative h-64 overflow-hidden">
@@ -170,18 +172,16 @@ const Movies = () => {
                 key={movie.id} 
                 className="bg-[#161D2F] rounded-lg overflow-hidden group relative hover:scale-105 transition-all duration-300"
               >
-                {auth && (
-                  <button 
-                    onClick={() => dispatch(toggleFavorite(movie))}
-                    className="absolute top-2 right-2 z-10 bg-black/50 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
-                  >
-                    {favoriteMovies.some(fav => fav.id === movie.id) ? (
-                      <FaHeart className="text-red-500" />
-                    ) : (
-                      <FaRegHeart className="text-white" />
-                    )}
-                  </button>
-                )}
+                <button 
+                  onClick={() => dispatch(toggleFavorite(movie))}
+                  className="absolute top-2 right-2 z-10 bg-black/50 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+                >
+                  {favoriteMovies.some(fav => fav.id === movie.id) ? (
+                    <FaHeart className="text-red-500" />
+                  ) : (
+                    <FaRegHeart className="text-white" />
+                  )}
+                </button>
                 
                 <Link to={`/movie-detail/${movie.id}`} state={movie} className="block">
                   <div className="relative h-64 overflow-hidden">

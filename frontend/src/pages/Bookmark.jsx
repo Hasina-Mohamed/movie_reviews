@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { FaHeart, FaSearch, FaStar } from 'react-icons/fa'
 import { useDispatch, useSelector } from 'react-redux'
-import { removeFromFavorites } from '../redux/slices/bookmarkSlice'
+import { removeFromFavorites, syncFavoritesWithAuth } from '../redux/slices/bookmarkSlice'
 import { Link } from 'react-router-dom'
 import Cookies from 'js-cookie'
 
@@ -16,10 +16,11 @@ const Bookmark = () => {
     } else {
       setAuth(false);
     }
-  }, [])
+    // Sync favorites with authentication state
+    dispatch(syncFavoritesWithAuth());
+  }, [userToken, dispatch])
   const [searchByTitle, setSearchByTitle] = useState('')
 
-  console.log('favoriteMovies:', favoriteMovies);
   return (
     <div className='w-full'>
       <div className='mb-8'>

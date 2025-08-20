@@ -4,6 +4,9 @@ import { MdMovie } from "react-icons/md";
 import { FaBars, FaTimes, FaUser } from "react-icons/fa";
 import Cookies from 'js-cookie';
 import { useGetCurrentUserQuery } from '../redux/slices/userSlices';
+import { useDispatch } from 'react-redux';
+import { syncFavoritesWithAuth } from '../redux/slices/bookmarkSlice';
+import { syncWatchlistWithAuth } from '../redux/slices/watchlistSlice';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,11 +14,15 @@ const Navbar = () => {
   const location = useLocation();
   const { data: user = {} } = useGetCurrentUserQuery();
   const currentUser = user?.user || {};
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const userToken = Cookies.get('userToken');
     setIsLoggedIn(!!userToken);
-  }, []);
+    // Sync favorites and watchlist with authentication state
+    dispatch(syncFavoritesWithAuth());
+    dispatch(syncWatchlistWithAuth());
+  }, [dispatch]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -23,6 +30,9 @@ const Navbar = () => {
 
   const handleLogout = () => {
     Cookies.remove('userToken');
+    // Clear favorites and watchlist on logout
+    dispatch(syncFavoritesWithAuth());
+    dispatch(syncWatchlistWithAuth());
     window.location.replace('/');
   };
 

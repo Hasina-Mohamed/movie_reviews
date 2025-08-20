@@ -13,7 +13,7 @@ const GenreFilter = ({ onGenreSelect }) => {
         );
         setGenres(response.data.genres);
       } catch (error) {
-        console.error('Error fetching genres:', error);
+        // Error fetching genres
       }
     };
 

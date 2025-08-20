@@ -41,8 +41,7 @@ const EnhancedReview = ({ review, onDelete }) => {
         toast.error(result.data?.message || 'Failed to update review');
       }
     } catch (error) {
-      toast.error('Error updating review');
-      console.error(error);
+      // Error handling
     }
   };
 
@@ -58,7 +57,6 @@ const EnhancedReview = ({ review, onDelete }) => {
         }
       } catch (error) {
         toast.error('Error deleting review');
-        console.error(error);
       }
     }
   };
@@ -76,8 +74,7 @@ const EnhancedReview = ({ review, onDelete }) => {
         toast.error(result.data?.message || 'Failed to vote');
       }
     } catch (error) {
-      toast.error('Error voting on review');
-      console.error(error);
+      // Error handling
     }
   };
 

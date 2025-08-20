@@ -32,7 +32,7 @@ export const userSlices = createApi({
 
 
         loginUser: builder.mutation({
-            query: (loginUser) => ( console.log(loginUser),{
+            query: (loginUser) => ({
                 url: 'user/login',
                 method: 'POST',
                 body: loginUser
@@ -44,7 +44,7 @@ export const userSlices = createApi({
                         setToken(token.data?.userToken);
                     }
                 } catch (error) {
-                    console.log(error);
+                    // Error handling
                 }
             }
             ,

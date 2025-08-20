@@ -55,7 +55,7 @@ const AdvancedSearch = ({ onSearchResults, onFiltersChange }) => {
       );
       setGenres(response.data.genres);
     } catch (error) {
-      console.error('Error fetching genres:', error);
+      // Error fetching genres
     }
   };
 
@@ -90,7 +90,7 @@ const AdvancedSearch = ({ onSearchResults, onFiltersChange }) => {
       const response = await axios.get(url);
       onSearchResults(response.data);
     } catch (error) {
-      console.error('Error searching movies:', error);
+      // Error searching movies
     } finally {
       setLoading(false);
     }

@@ -50,7 +50,7 @@ const MovieDetails = () => {
 
     const handleReviewDelete = (reviewId) => {
         // This will trigger a refetch through RTK Query
-        console.log('Review deleted:', reviewId);
+        // Review deleted
     }
 
     const dispatch = useDispatch();

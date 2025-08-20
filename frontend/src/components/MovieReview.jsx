@@ -33,7 +33,7 @@ const MovieReview = ({ setShowReview, movieId }) => {
                     toast.error(res?.data?.message);
                 }
             }).catch((err) => {
-                console.log(err);
+                // Error handling
             })
     }
     return (

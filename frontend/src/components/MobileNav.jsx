@@ -4,6 +4,9 @@ import { MdSpaceDashboard } from 'react-icons/md';
 import { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
 import { useGetCurrentUserQuery } from '../redux/slices/userSlices';
+import { useDispatch } from 'react-redux';
+import { syncFavoritesWithAuth } from '../redux/slices/bookmarkSlice';
+import { syncWatchlistWithAuth } from '../redux/slices/watchlistSlice';
 
 const MobileNav = () => {
     const location = useLocation();
@@ -11,6 +14,7 @@ const MobileNav = () => {
     const userToken = Cookies.get('userToken');
     const { data: user = {} } = useGetCurrentUserQuery();
     const currentUser = user?.user || {};
+    const dispatch = useDispatch();
 
     useEffect(() => {
         if (userToken) {
@@ -18,7 +22,10 @@ const MobileNav = () => {
         } else {
             setAuth(false);
         }
-    }, [userToken]);
+        // Sync favorites and watchlist with authentication state
+        dispatch(syncFavoritesWithAuth());
+        dispatch(syncWatchlistWithAuth());
+    }, [userToken, dispatch]);
 
     return (
         <div className='lg:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-t from-[#0E1628] to-[#161D2F] border-t border-gray-700/30 backdrop-blur-xl z-50'>

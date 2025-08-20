@@ -4,8 +4,13 @@ import { Link, useLocation } from 'react-router-dom';
 import { FaBookmark, FaListUl, FaUser, FaFilm, FaHeart, FaClock, FaSignOutAlt, FaUserCircle } from "react-icons/fa";
 import Cookies from 'js-cookie';
 import { useGetCurrentUserQuery } from '../redux/slices/userSlices';
+import { useDispatch } from 'react-redux';
+import { syncFavoritesWithAuth } from '../redux/slices/bookmarkSlice';
+import { syncWatchlistWithAuth } from '../redux/slices/watchlistSlice';
 import toast from 'react-hot-toast';
+
 const Sidebar = () => {
+    const dispatch = useDispatch();
     const { data: user = {} } = useGetCurrentUserQuery()
     const currentUser = user?.user || {};
     const [auth, setAuth] = useState(false);
@@ -18,10 +23,16 @@ const Sidebar = () => {
         } else {
             setAuth(false);
         }
-    }, [userToken])
+        // Sync favorites and watchlist with authentication state
+        dispatch(syncFavoritesWithAuth());
+        dispatch(syncWatchlistWithAuth());
+    }, [userToken, dispatch])
     
     const handleLogout = () => {
         Cookies.remove('userToken');
+        // Clear favorites and watchlist on logout
+        dispatch(syncFavoritesWithAuth());
+        dispatch(syncWatchlistWithAuth());
         window.location.replace('/');
         setTimeout(() => {
             toast.success('Successfully logged out')
@@ -126,7 +137,6 @@ const Sidebar = () => {
                                 </div>
                                 <div className='hidden md:block flex-1'>
                                     <p className='font-bold text-white text-xs'>{currentUser?.username || 'User'}</p>
-                                    <p className='text-xs text-gray-400'>Premium Member</p>
                                 </div>
                             </div>
 
